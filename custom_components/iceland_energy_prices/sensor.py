@@ -168,7 +168,7 @@ class IcelandEnergyPricesCoordinator(DataUpdateCoordinator):
         response = requests.get(DATA_URL, headers=headers, timeout=30)
         response.raise_for_status()
 
-        # Parse HTML
+        # Parse HTML - use html.parser to avoid lxml dependency issues
         soup = BeautifulSoup(response.content, "html.parser")
 
         # Find all table rows
@@ -193,6 +193,7 @@ class IcelandEnergyPricesCoordinator(DataUpdateCoordinator):
             # Check if this row contains our provider
             if provider_name.lower() in row_text.lower():
                 provider_data = self._parse_provider_row(cells)
+                _LOGGER.debug(f"Found provider {provider_name} with data: {provider_data}")
                 break
 
         if not provider_data:
@@ -202,7 +203,7 @@ class IcelandEnergyPricesCoordinator(DataUpdateCoordinator):
             "provider": provider_name,
             "prices": provider_data,
             "last_updated": response.headers.get("Date"),
-        } 
+        }
 
     def _parse_provider_row(self, cells: list) -> dict[str, float | None]:
         """Parse price values from table cells."""
@@ -224,34 +225,47 @@ class IcelandEnergyPricesCoordinator(DataUpdateCoordinator):
                     return None
             return None
 
-        # Extract prices from cells (adjust indices based on table structure)
-        # Typical structure: [logo, name, general, special, origin, average, notes, button]
+        # Extract prices from cells - FIXED indices based on actual table structure
+        # Table structure:
+        # Cell 0: Provider logo/name
+        # Cell 1: General Price (kWh)
+        # Cell 2: Special Price (kWh)
+        # Cell 3: Price with Origin Guarantee
+        # Cell 4: Average Cost (has border-l and border-r classes)
+        # Cell 5: Information text
+        # Cell 6: Buttons (View/Select)
+        
         try:
-            # Cell index 2: General Price
+            # Cell index 1: General Price
+            if len(cells) > 1:
+                general_text = cells[1].get_text(strip=True)
+                prices[PRICE_GENERAL] = parse_price(general_text)
+                _LOGGER.debug(f"General price text: {general_text}, parsed: {prices[PRICE_GENERAL]}")
+
+            # Cell index 2: Special Price
             if len(cells) > 2:
-                prices[PRICE_GENERAL] = parse_price(cells[2].get_text(strip=True))
+                special_text = cells[2].get_text(strip=True)
+                prices[PRICE_SPECIAL] = parse_price(special_text)
+                _LOGGER.debug(f"Special price text: {special_text}, parsed: {prices[PRICE_SPECIAL]}")
 
-            # Cell index 3: Special Price
+            # Cell index 3: Origin Guarantee Price
             if len(cells) > 3:
-                prices[PRICE_SPECIAL] = parse_price(cells[3].get_text(strip=True))
+                origin_text = cells[3].get_text(strip=True)
+                prices[PRICE_ORIGIN_GUARANTEE] = parse_price(origin_text)
+                _LOGGER.debug(f"Origin guarantee text: {origin_text}, parsed: {prices[PRICE_ORIGIN_GUARANTEE]}")
 
-            # Cell index 4: Origin Guarantee Price
+            # Cell index 4: Average Cost
             if len(cells) > 4:
-                prices[PRICE_ORIGIN_GUARANTEE] = parse_price(
-                    cells[4].get_text(strip=True)
-                )
-
-            # Cell index 5: Average Cost
-            if len(cells) > 5:
-                avg_text = cells[5].get_text(strip=True)
+                avg_text = cells[4].get_text(strip=True)
                 # Average cost uses comma as thousands separator
                 prices[PRICE_AVERAGE_COST] = parse_price(avg_text)
+                _LOGGER.debug(f"Average cost text: {avg_text}, parsed: {prices[PRICE_AVERAGE_COST]}")
 
         except Exception as err:
             _LOGGER.error("Error parsing provider row: %s", err)
             raise ValueError(f"Failed to parse price data: {err}") from err
 
-        return prices 
+        return prices
 
 
 class IcelandEnergyPriceSensor(CoordinatorEntity, SensorEntity):
