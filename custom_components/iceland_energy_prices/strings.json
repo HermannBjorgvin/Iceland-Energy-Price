@@ -1,0 +1,46 @@
+{
+  "title": "Iceland Energy Prices",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Iceland Energy Prices",
+        "description": "Select your electricity provider to monitor energy prices from Aurbjörg",
+        "data": {
+          "provider": "Energy Provider"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Aurbjörg price comparison service",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "This provider is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options for Iceland Energy Prices",
+        "description": "Configure update settings",
+        "data": {
+          "update_interval": "Update interval (hours)"
+        }
+      }
+    }
+  },
+  "selector": {
+    "provider": {
+      "options": {
+        "orkusalan": "Orkusalan",
+        "straumlind": "Straumlind",
+        "orkubu_vestfjarda": "Orkubú Vestfjarða",
+        "atlantsorka": "Atlantsorka",
+        "orka_heimilanna": "Orka Heimilanna",
+        "n1_rafmagn": "N1 Rafmagn",
+        "orka_natturunnar": "Orka náttúrunnar",
+        "hs_orka": "HS Orka"
+      }
+    }
+  }
+}
