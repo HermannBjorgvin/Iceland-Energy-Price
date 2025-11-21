@@ -27,7 +27,7 @@ A Home Assistant integration that monitors electricity prices from all major Ice
 
 ## 📦 Installation
 
-### Method 1: Direct GitHub Installation (Recommended)
+### Direct GitHub Installation (Recommended)
 
 1. **Add Custom Repository:**
    ```
@@ -47,34 +47,6 @@ A Home Assistant integration that monitors electricity prices from all major Ice
    - Click **+ ADD INTEGRATION**
    - Search for "Iceland Energy Prices"
    - Follow the configuration steps
-
-### Method 2: Manual Installation
-
-1. **Download the integration:**
-   ```bash
-   cd /config
-   git clone https://github.com/HermannBjorgvin/Iceland-Energy-Price.git
-   ```
-
-2. **Copy to custom_components:**
-   ```bash
-   cp -r Iceland-Energy-Price/custom_components/iceland_energy_prices /config/custom_components/
-   ```
-
-3. **Restart Home Assistant**
-
-4. **Add the integration:**
-   - Go to **Settings** → **Devices & Services**
-   - Click **+ ADD INTEGRATION**
-   - Search for "Iceland Energy Prices"
-   - Select your provider and click **Submit**
-
-### Method 3: Manual Download
-
-1. Download the [latest release](https://github.com/HermannBjorgvin/Iceland-Energy-Price/releases)
-2. Extract the `iceland_energy_prices` folder to `/config/custom_components/`
-3. Restart Home Assistant
-4. Add the integration via UI
 
 ## ⚙️ Configuration
 
@@ -133,82 +105,7 @@ Each sensor includes these attributes:
 - `currency`: ISK
 - `unit`: kr/kWh or ISK
 
-## 📈 Example Usage
-
-### Automation Example
-
-```yaml
-automation:
-  - alias: "Notify High Energy Price"
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.orkusalan_general_price
-        above: 15
-    action:
-      - service: notify.mobile_app
-        data:
-          title: "High Energy Price Alert"
-          message: "Current price is {{ states('sensor.orkusalan_general_price') }} kr/kWh"
-```
-
-### Template Sensor Example
-
-```yaml
-template:
-  - sensor:
-      - name: "Daily Energy Cost"
-        unit_of_measurement: "ISK"
-        state: >
-          {% set consumption = states('sensor.daily_energy_consumption')|float %}
-          {% set price = states('sensor.orkusalan_general_price')|float %}
-          {{ (consumption * price)|round(2) }}
-```
-
-### Lovelace Card Example
-
-```yaml
-type: entities
-title: Iceland Energy Prices
-entities:
-  - entity: sensor.orkusalan_general_price
-    name: Current Rate
-    icon: mdi:flash
-  - entity: sensor.orkusalan_special_price
-    name: Night Rate
-    icon: mdi:weather-night
-  - entity: sensor.orkusalan_average_cost
-    name: Monthly Average
-    icon: mdi:calculator
-```
-
 ## 🐛 Troubleshooting
-
-### Integration Not Appearing
-
-1. **Verify installation path:**
-   ```bash
-   ls -la /config/custom_components/iceland_energy_prices/
-   ```
-   Should show: `__init__.py`, `manifest.json`, `sensor.py`, etc.
-
-2. **Check Home Assistant logs:**
-   ```bash
-   grep iceland_energy_prices /config/home-assistant.log
-   ```
-
-3. **Restart Home Assistant completely:**
-   - **Developer Tools** → **RESTART** → **Restart Home Assistant**
-
-### Sensors Show "Unavailable"
-
-1. **Check internet connection** to aurbjorg.is
-2. **Verify provider selection** in configuration
-3. **Force update** in Developer Tools:
-   ```yaml
-   service: homeassistant.update_entity
-   target:
-     entity_id: sensor.orkusalan_general_price
-   ```
 
 ### Price Data Not Updating
 
@@ -234,15 +131,6 @@ Via configuration options:
 - Maximum: 168 hours (1 week)
 - Default: 24 hours
 - Recommended: 24 hours (prices update daily)
-
-### REST API Access
-
-Access sensor data via Home Assistant REST API:
-```bash
-curl -X GET \
-  http://homeassistant.local:8123/api/states/sensor.orkusalan_general_price \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
 
 ## 🤝 Contributing
 
